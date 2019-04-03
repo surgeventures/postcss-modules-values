@@ -3,23 +3,25 @@
 const postcss = require('postcss');
 const ICSSReplaceSymbols = require('icss-replace-symbols');
 const replaceSymbols = require('icss-replace-symbols');
+const md5 = require('md5');
 
 const matchImports = /^(.+?|\([\s\S]+?\))\s+from\s+("[^"]*"|'[^']*'|[\w-]+)$/;
 const matchValueDefinition = /(?:\s+|^)([\w-]+):?\s+(.+?)\s*$/g;
 const matchImport = /^([\w-]+)(?:\s+as\s+([\w-]+))?/;
-
-let options = {};
-let importIndex = 0;
-let createImportedName =
-  (options && options.createImportedName) ||
-  ((importName /*, path*/) =>
-    `i__const_${importName.replace(/\W/g, '_')}_${importIndex++}`);
 
 module.exports = postcss.plugin(
   'postcss-modules-values',
   () => (css, result) => {
     const importAliases = [];
     const definitions = {};
+    const md5Suffix = md5(css.source.input);
+
+    let options = {};
+    let importIndex = 0;
+    let createImportedName =
+      (options && options.createImportedName) ||
+      ((importName /*, path*/) =>
+        `i__const_${importName.replace(/\W/g, '_')}_${importIndex}_${md5Suffix}`);
 
     const addDefinition = atRule => {
       let matches;
